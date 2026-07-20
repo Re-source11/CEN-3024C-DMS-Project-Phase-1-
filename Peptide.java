@@ -1,10 +1,12 @@
 /*
  Baker Legerme
  CEN 3024C - 31032
- July 3rd, 2026
+ July 19th, 2026
 
  class: Peptide
- This is the object class for the DMS.
+ This is the object class for the DMS. one instance is one vial in inventory.
+ frequency (how often a dose gets taken) is a real field now, carried from
+ the constructor all the way through the supply math.
 */
 public class Peptide {
     private int vialId;
@@ -18,9 +20,12 @@ public class Peptide {
     private boolean titrationNeeded;
     private float titrationIncrementmg;
     private int daysNeeded;
+    private String frequency;
+
     public Peptide(int vialId, String compoundName, String deliveryMethod, float targetedDosemg,
                    float currentDosemg, float minTherapeuticDosemg, float totalVialMassmg,
-                   float concentrationMgPermL, boolean titrationNeeded, float titrationIncrementmg, int daysNeeded) {
+                   float concentrationMgPermL, String frequency, boolean titrationNeeded,
+                   float titrationIncrementmg, int daysNeeded) {
         this.vialId = vialId;
         this.compoundName = compoundName;
         this.deliveryMethod = deliveryMethod;
@@ -32,10 +37,13 @@ public class Peptide {
         this.titrationNeeded = titrationNeeded;
         this.titrationIncrementmg = titrationIncrementmg;
         this.daysNeeded = daysNeeded;
+        this.frequency = frequency;
     }
+
     public int getVialId() { return vialId; }
     public String getCompoundName() { return compoundName; }
     public String getDeliveryMethod() { return deliveryMethod; }
+    public String getFrequency() { return frequency; }
     public float getTargetedDosemg() { return targetedDosemg; }
     public float getCurrentDosemg() { return currentDosemg; }
     public float getMinTherapeuticDosemg() { return minTherapeuticDosemg; }
@@ -44,6 +52,7 @@ public class Peptide {
     public boolean isTitrationNeeded() { return titrationNeeded; }
     public float getTitrationIncrementmg() { return titrationIncrementmg; }
     public int getDaysNeeded() { return daysNeeded; }
+
     public boolean setVialId(int vialId) { this.vialId = vialId; return true; }
     public boolean setCompoundName(String compoundName) { this.compoundName = compoundName; return true; }
     public boolean setDeliveryMethod(String deliveryMethod) { this.deliveryMethod = deliveryMethod; return true; }
@@ -57,15 +66,25 @@ public class Peptide {
     public boolean setDaysNeeded(int daysNeeded) { this.daysNeeded = daysNeeded; return true; }
 
     /*
+     method: setFrequency
+     purpose: changes the dosing frequency. returns a boolean like every other
+              setter so they all match and the manager treats them the same
+     arguments: frequency: the new frequency (daily, eod, weekly, or days as text)
+     return: true once the value is set
+    */
+    public boolean setFrequency(String frequency) { this.frequency = frequency; return true; }
+
+    /*
      method: toString
      purpose: formats one vial as a single readable line, like a receipt, so the
-              inventory printout stays aligned in columns
+              inventory printout stays aligned in columns. the GUI shows records
+              in a table now so this is mostly for logs and quick dumps
      arguments: none
      return: the formatted String for this vial
     */
     @Override
     public String toString() {
-        return String.format("Vial ID: %-5d | %-12s | Route: %-13s | Mass: %-5.1f mg | Target Dose: %-4.1f mg",
-                vialId, compoundName, deliveryMethod, totalVialMassmg, targetedDosemg);
+        return String.format("Vial ID: %-5d | %-12s | Route: %-13s | Mass: %-5.1f mg | Target Dose: %-4.1f mg | Freq: %-6s",
+                vialId, compoundName, deliveryMethod, totalVialMassmg, targetedDosemg, frequency);
     }
 }

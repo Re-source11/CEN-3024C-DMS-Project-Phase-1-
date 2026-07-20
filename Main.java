@@ -1,3 +1,10 @@
+/*
+
+ Baker Legerme - CEN 3024C - 31032
+
+
+ ---------------------------------------------------------------------------
+import javafx.application.Application;
 import java.util.Scanner;
 import java.util.NoSuchElementException; // to protect iterations
 
@@ -12,7 +19,7 @@ import java.util.NoSuchElementException; // to protect iterations
  Overall program objective: This is a DMS for tracking peptides.
 
 */
-public class Main {
+ /* public class Main {
 
     private static final float MAX_SAFE_LIMIT = 100.0f;
 
@@ -30,7 +37,7 @@ public class Main {
                 min to max: the allowed range
      return: the validated float
     */
-    public float readFloat(Scanner scanner, String prompt, float min, float max) {
+  /*  public float readFloat(Scanner scanner, String prompt, float min, float max) {
         while (true) {
             System.out.print(prompt);
             String line = scanner.nextLine().trim();
@@ -53,7 +60,7 @@ public class Main {
                 min to max: the allowed range
      return: the validated int
     */
-    public int readInt(Scanner scanner, String prompt, int min, int max) {
+  /*  public int readInt(Scanner scanner, String prompt, int min, int max) {
         while (true) {
             System.out.print(prompt);
             String line = scanner.nextLine().trim();
@@ -75,7 +82,7 @@ public class Main {
      arguments: scanner - the shared input scanner, prompt - what to show the user
      return: the validated boolean
     */
-    public boolean readBoolean(Scanner scanner, String prompt) {
+  /*  public boolean readBoolean(Scanner scanner, String prompt) {
         while (true) {
             System.out.print(prompt);
             String line = scanner.nextLine().trim().toLowerCase();
@@ -86,6 +93,35 @@ public class Main {
     }
 
     /*
+         method: readFrequencyAsDays
+         purpose: accepts text like "daily" or "weekly", OR a number from 1 to 10,
+                  and converts it all into a standard integer of days for the backend.
+        */
+ /*   public String readFrequencyAsDays(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            // 1. Check for specific string keywords
+            if (input.equals("daily")) return 1;
+            if (input.equals("weekly")) return 7;
+            if (input.equals("biweekly")) return 14;
+
+            // 2. If it's not a word, try parsing it as a number
+
+            try {
+                int freq = Integer.parseInt(input);
+                if (freq >= 1 && freq <= 10) {
+                    return freq;
+                }
+                System.out.println("Error: Number must be between 1 and 10.");
+            } catch (NumberFormatException e) {
+                // 3. If parseInt fails, they typed a word we don't recognize
+                System.out.println("Error: Please enter 'daily', 'weekly', or a number between 1 and 10."); */
+     /*       }
+        }
+    }
+    /*
      method: runApplication
      purpose: the main loop. shows the menu, validates the selection, and routes each
               choice to the matching InventoryManager operation. wraps everything so a
@@ -93,7 +129,7 @@ public class Main {
      arguments: none
      return: true when the user exits normally
     */
-    public boolean runApplication() {
+  /*  public boolean runApplication() {
         InventoryManager manager = new InventoryManager();
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
@@ -154,6 +190,7 @@ public class Main {
                         float current = readFloat(scanner, "Enter Current Dose in mg (0.1 - " + target + "): ", 0.1f, target);
                         float min = readFloat(scanner, "Enter Min Therapeutic Dose in mg (0.1 - " + target + "): ", 0.1f, target);
                         float conc = readFloat(scanner, "Enter Concentration in mg/mL (0.1 - 1000.0): ", 0.1f, 1000.0f);
+                        int freq = readFrequencyAsDays(scanner, "Enter Frequency (e.g. daily, weekly, or 1-10): ");
                         boolean isTitrating = readBoolean(scanner, "Is Titration Needed? (true/false): ");
 
                         float increment = 0f;
@@ -164,7 +201,7 @@ public class Main {
                             days = readInt(scanner, "Enter Days Needed per Step (1 - 365): ", 1, 365);
                         }
 
-                        boolean success = manager.addPeptide(name, route, target, current, min, totalMass, conc, isTitrating, increment, days);
+                        boolean success = manager.addPeptide(name, route, target, current, min, totalMass, conc, freq, isTitrating, increment, days);
                         System.out.println(success ? "Vial added successfully." : "System Error: Failed to add.");
                         System.out.println(manager.getAllPeptidesAsString());
                         break;
@@ -286,4 +323,7 @@ public class Main {
         scanner.close();
         return true;
     }
-}
+ }
+
+
+ */

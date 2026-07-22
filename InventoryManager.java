@@ -4,37 +4,42 @@ import java.io.File; //allows for files to be imported
 import java.io.FileNotFoundException; //exception if path does not exist
 import java.util.Scanner;
 
-/*
- Baker Legerme
- CEN 3024C - 31032
- July 19th, 2026
-
- class: InventoryManager
- The functions and creation of objects and the crud plus custom.
- phase 4: can now be backed by MySQL. the list is still the working copy,
- the database just mirrors it, so the GUI and the tests call the exact
- same methods and never know the difference.
-*/
+/**
+ * The functions and creation of objects and the crud plus custom.
+ * phase 4: can now be backed by MySQL. the list is still the working copy,
+ * the database just mirrors it, so the GUI and the tests call the exact
+ * same methods and never know the difference.
+ * <p>
+ * CEN 3024C - 31032
+ *
+ * @author Baker Legerme
+ * @version 4.0
+ */
 public class InventoryManager {
     private List<Peptide> inventory;
     private int idGenerator;
     private DatabaseManager database; // null when running purely in memory
     private String lastDatabaseError = ""; // the raw reason the last connect failed
 
+    /**
+     * starts an empty in-memory inventory with the id generator at 100.
+     */
     public InventoryManager() {
         this.inventory = new ArrayList<>();
         this.idGenerator = 100; //automatic id generator to prevent inserting where one exists already
         this.database = null;
     }
 
-    /*
-     method: connectDatabase
-     purpose: switches into database mode. loads whatever is stored into the
-              list and starts the id generator at the highest stored id plus
-              one, because ids retire, they never get handed out twice
-     arguments: url: the jdbc url, user/password: the database login
-     return: true if it connected and loaded, false to just stay in memory
-    */
+    /**
+     * switches into database mode. loads whatever is stored into the
+     * list and starts the id generator at the highest stored id plus
+     * one, because ids retire, they never get handed out twice
+     *
+     * @param url the jdbc url pointing at the server and database
+     * @param user the database username
+     * @param password the database password
+     * @return true if it connected and loaded, false to just stay in memory
+     */
     public boolean connectDatabase(String url, String user, String password) {
         DatabaseManager db = new DatabaseManager();
         if (!db.connect(url, user, password)) {
@@ -51,53 +56,54 @@ public class InventoryManager {
         return true;
     }
 
-    /*
-     method: isDatabaseConnected
-     purpose: lets the GUI say which storage mode is on in the status bar
-     arguments: none
-     return: true when a database is behind the inventory
-    */
-    /*
-     method: getLastDatabaseError
-     purpose: passes the databases own failure message up to the GUI so the
-              status bar can say the real reason instead of a guess
-     arguments: none
-     return: the last connect error text, or empty if there wasnt one
-    */
+    /**
+     * lets the GUI say which storage mode is on in the status bar
+     * passes the databases own failure message up to the GUI so the
+     * status bar can say the real reason instead of a guess
+     *
+     * @return true when a database is behind the inventory */ /* the last connect error text, or empty if there wasnt one
+     */
     public String getLastDatabaseError() {
         return lastDatabaseError;
     }
 
-    /*
-     method: isDatabaseConnected
-     purpose: lets the GUI say which storage mode is on in the status bar
-     arguments: none
-     return: true when a database is behind the inventory
-    */
+    /**
+     * lets the GUI say which storage mode is on in the status bar
+     *
+     * @return true when a database is behind the inventory
+     */
     public boolean isDatabaseConnected() {
         return database != null && database.isConnected();
     }
 
-    /*
-     method: syncToDatabase
-     purpose: helper. after an update sticks in memory this pushes the records
-              new state to the database (if ones connected) so both copies
-              always match. one method covers every update path
-     arguments: p: the record that just changed
-     return: nothing
-    */
+    /**
+     * helper. after an update sticks in memory this pushes the records
+     * new state to the database (if ones connected) so both copies
+     * always match. one method covers every update path
+     *
+     * @param p the record that just changed
+     */
     private void syncToDatabase(Peptide p) {
         if (isDatabaseConnected()) { database.update(p); }
     }
 
-    /*
-     method: addPeptide
-     purpose: builds a new Peptide with the next auto id and puts it in the
-              inventory, and mirrors it into the database when ones connected
-     arguments: name, route, target, current, min, totalMass, concentration,
-                frequency, titration, increment, days
-     return: true if the list accepted the new object
-    */
+    /**
+     * builds a new Peptide with the next auto id and puts it in the
+     * inventory, and mirrors it into the database when ones connected
+     *
+     * @param name the compound name, 3-20 chars
+     * @param route how its taken, subcutaneous, topical, or intramuscular
+     * @param target the target dose in mg
+     * @param current the current dose in mg
+     * @param min the minimum therapeutic dose in mg
+     * @param totalMass how much the whole vial holds in mg
+     * @param concentration the concentration in mg per mL
+     * @param frequency how often its dosed, daily, eod, weekly, or days as text
+     * @param titration whether this vial follows a titration schedule
+     * @param increment how much the dose steps up each titration step, in mg
+     * @param days how many days each titration step lasts
+     * @return true if the list accepted the new object
+     */
     public boolean addPeptide(String name, String route, float target, float current, float min,
                               float totalMass, float concentration, String frequency,
                               boolean titration, float increment, int days) {
@@ -108,23 +114,21 @@ public class InventoryManager {
         return added;
     }
 
-    /*
-     method: getAllPeptides
-     purpose: hands the GUI the actual list so the table can build one row per
-              record. this is the one accessor the table needed
-     arguments: none
-     return: the inventory as a List of Peptide objects
-    */
+    /**
+     * hands the GUI the actual list so the table can build one row per
+     * record. this is the one accessor the table needed
+     *
+     * @return the inventory as a List of Peptide objects
+     */
     public List<Peptide> getAllPeptides() {
         return inventory;
     }
 
-    /*
-     method: getAllPeptidesAsString
-     purpose: turns the whole inventory into one printable block, one vial per line
-     arguments: none
-     return: the full inventory as a String, or a message if its empty
-    */
+    /**
+     * turns the whole inventory into one printable block, one vial per line
+     *
+     * @return the full inventory as a String, or a message if its empty
+     */
     public String getAllPeptidesAsString() {
         if (inventory.isEmpty()) {
             return "Inventory is currently empty.";
@@ -136,12 +140,12 @@ public class InventoryManager {
         return sb.toString();
     }
 
-    /*
-     method: findPeptide
-     purpose: looks up a vial by its id so callers can check it exists and read its values
-     arguments: vialId: the id to search for
-     return: the matching Peptide, or null if no record has that id
-    */
+    /**
+     * looks up a vial by its id so callers can check it exists and read its values
+     *
+     * @param vialId the id to search for
+     * @return the matching Peptide, or null if no record has that id
+     */
     public Peptide findPeptide(int vialId) {
         for (Peptide p : inventory) {
             if (p.getVialId() == vialId) { return p; }
@@ -149,12 +153,13 @@ public class InventoryManager {
         return null;
     }
 
-    /*
-     method: updatePeptideName
-     purpose: changes the compound name on the vial with the matching id
-     arguments: id: which vial, newName: the new name
-     return: true if updated, false if the id was not found
-    */
+    /**
+     * changes the compound name on the vial with the matching id
+     *
+     * @param id which vial
+     * @param newName the new name
+     * @return true if updated, false if the id was not found
+     */
     public boolean updatePeptideName(int id, String newName) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -163,12 +168,13 @@ public class InventoryManager {
         return ok;
     }
 
-    /*
-     method: updatePeptideRoute
-     purpose: changes the delivery method on the vial with the matching id
-     arguments: id: which vial, newRoute: the new route
-     return: true if updated, false if the id was not found
-    */
+    /**
+     * changes the delivery method on the vial with the matching id
+     *
+     * @param id which vial
+     * @param newRoute the new route
+     * @return true if updated, false if the id was not found
+     */
     public boolean updatePeptideRoute(int id, String newRoute) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -177,13 +183,14 @@ public class InventoryManager {
         return ok;
     }
 
-    /*
-     method: updatePeptideCurrentDose
-     purpose: changes the current dose, but only if it stays at or below the target dose
-              so the titration math always moves in a valid direction
-     arguments: id: which vial, newCurrent: the new current dose in mg
-     return: true if updated, false if the id was not found or the value broke the rule
-    */
+    /**
+     * changes the current dose, but only if it stays at or below the target dose
+     * so the titration math always moves in a valid direction
+     *
+     * @param id which vial
+     * @param newCurrent the new current dose in mg
+     * @return true if updated, false if the id was not found or the value broke the rule
+     */
     public boolean updatePeptideCurrentDose(int id, float newCurrent) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -195,12 +202,13 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: updatePeptideMinDose
-     purpose: changes the minimum therapeutic dose, capped at the target dose
-     arguments: id: which vial, newMin: the new minimum dose in mg
-     return: true if updated, false if the id was not found or the value broke the rule
-    */
+    /**
+     * changes the minimum therapeutic dose, capped at the target dose
+     *
+     * @param id which vial
+     * @param newMin the new minimum dose in mg
+     * @return true if updated, false if the id was not found or the value broke the rule
+     */
     public boolean updatePeptideMinDose(int id, float newMin) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -212,12 +220,13 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: updatePeptideTotalMass
-     purpose: changes the total vial mass, kept inside the 0-100mg safety range
-     arguments: id: which vial, newMass - the new mass in mg
-     return: true if updated, false if the id was not found or the value was out of range
-    */
+    /**
+     * changes the total vial mass, kept inside the 0-100mg safety range
+     *
+     * @param id which vial
+     * @param newMass the new mass in mg
+     * @return true if updated, false if the id was not found or the value was out of range
+     */
     public boolean updatePeptideTotalMass(int id, float newMass) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -229,12 +238,13 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: updatePeptideConcentration
-     purpose: changes the concentration, kept inside the 0-1000 mg/mL range
-     arguments: id: which vial, newConc: the new concentration in mg/mL
-     return: true if updated, false if the id was not found or the value was out of range
-    */
+    /**
+     * changes the concentration, kept inside the 0-1000 mg/mL range
+     *
+     * @param id which vial
+     * @param newConc the new concentration in mg/mL
+     * @return true if updated, false if the id was not found or the value was out of range
+     */
     public boolean updatePeptideConcentration(int id, float newConc) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -246,13 +256,14 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: updatePeptideTargetDose
-     purpose: changes the target dose, but never below the current dose already on the record,
-              otherwise the titration schedule would run backwards
-     arguments: id: which vial, newTargetDose: the new target dose in mg
-     return: true if updated, false if the id was not found or the new target was too low
-    */
+    /**
+     * changes the target dose, but never below the current dose already on the record,
+     * otherwise the titration schedule would run backwards
+     *
+     * @param id which vial
+     * @param newTargetDose the new target dose in mg
+     * @return true if updated, false if the id was not found or the new target was too low
+     */
     public boolean updatePeptideTargetDose(int id, float newTargetDose) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -264,12 +275,13 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: updatePeptideTitration
-     purpose: flips whether this vial uses a titration schedule or a static dose
-     arguments: id: which vial, needed: true for titration, false for static
-     return: true if updated, false if the id was not found
-    */
+    /**
+     * flips whether this vial uses a titration schedule or a static dose
+     *
+     * @param id which vial
+     * @param needed true for titration, false for static
+     * @return true if updated, false if the id was not found
+     */
     public boolean updatePeptideTitration(int id, boolean needed) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -278,14 +290,14 @@ public class InventoryManager {
         return ok;
     }
 
-    /*
-     method: removePeptide
-     purpose: deletes the vial with the matching id from the inventory, and
-              from the database table too when ones connected. the id is gone
-              for good, never reused
-     arguments: vialId: the id to remove
-     return: true if a record was deleted, false if the id was not found
-    */
+    /**
+     * deletes the vial with the matching id from the inventory, and
+     * from the database table too when ones connected. the id is gone
+     * for good, never reused
+     *
+     * @param vialId the id to remove
+     * @return true if a record was deleted, false if the id was not found
+     */
     public boolean removePeptide(int vialId) {
         for (int i = 0; i < inventory.size(); i++) {
             if (inventory.get(i).getVialId() == vialId) {
@@ -297,13 +309,14 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: updatePeptideIncrement
-     purpose: changes the titration increment. has to be above zero, which also protects
-              the supply calculation from dividing by zero
-     arguments: id: which vial, newIncrement: the new increment in mg
-     return: true if updated, false if the id was not found or the value broke the rule
-    */
+    /**
+     * changes the titration increment. has to be above zero, which also protects
+     * the supply calculation from dividing by zero
+     *
+     * @param id which vial
+     * @param newIncrement the new increment in mg
+     * @return true if updated, false if the id was not found or the value broke the rule
+     */
     public boolean updatePeptideIncrement(int id, float newIncrement) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -315,12 +328,13 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: updatePeptideDays
-     purpose: changes how many days are spent at each titration step (1 to 365)
-     arguments: id: which vial, newDays: the new days per step
-     return: true if updated, false if the id was not found or the value was out of range
-    */
+    /**
+     * changes how many days are spent at each titration step (1 to 365)
+     *
+     * @param id which vial
+     * @param newDays the new days per step
+     * @return true if updated, false if the id was not found or the value was out of range
+     */
     public boolean updatePeptideDays(int id, int newDays) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -332,13 +346,13 @@ public class InventoryManager {
         return false;
     }
 
-    /*
-     method: frequencyToDaysBetween
-     purpose: converts the user's frequency input (a word or a number of days)
-              into days-between-doses for the supply math. one converter, one place.
-     arguments: input - "daily", "eod", "weekly", or a number of days up to 10
-     return: days between doses as a float, or -1 if the input is invalid
-    */
+    /**
+     * converts the user's frequency input (a word or a number of days)
+     * into days-between-doses for the supply math. one converter, one place.
+     *
+     * @param input "daily", "eod", "weekly", or a number of days up to 10
+     * @return days between doses as a float, or -1 if the input is invalid
+     */
     public float frequencyToDaysBetween(String input) {
         if (input == null) { return -1f; }
         String f = input.trim().toLowerCase();
@@ -354,14 +368,15 @@ public class InventoryManager {
         return -1f;
     }
 
-    /*
-     method: updateFrequency
-     purpose: changes how often this vial is dosed. the input runs through
-              frequencyToDaysBetween first so only a real frequency (daily,
-              eod, weekly, or 1 to 10 days) can ever land on a record
-     arguments: id: which vial, newFrequency: whatever the user typed
-     return: true if updated, false if the id was not found or the input was invalid
-    */
+    /**
+     * changes how often this vial is dosed. the input runs through
+     * frequencyToDaysBetween first so only a real frequency (daily,
+     * eod, weekly, or 1 to 10 days) can ever land on a record
+     *
+     * @param id which vial
+     * @param newFrequency whatever the user typed
+     * @return true if updated, false if the id was not found or the input was invalid
+     */
     public boolean updateFrequency(int id, String newFrequency) {
         Peptide p = findPeptide(id);
         if (p == null) { return false; }
@@ -371,21 +386,21 @@ public class InventoryManager {
         return ok;
     }
 
-    /*
-     method: calculateSupply
-     purpose: the custom action. figures out how many days the vial will last.
-              every branch multiplies by the frequency now, since a vial holding
-              5 doses lasts 5 days dosed daily but 35 dosed weekly. for a static
-              dose its just doses left times days between. for a titration
-              schedule it walks each dose step, subtracts the mass that step
-              eats (days per step divided by days between, kept in float math
-              so 7 days at eod is 3.5 doses and not 3), and either warns that
-              the vial runs out mid-titration (with the total mg the protocol
-              needs) or reports how many days the full protocol lasts including
-              the leftover days at the target dose
-     arguments: vialId: which vial to run the calculation on
-     return: a result String, either the supply projection or an error if the id was not found
-    */
+    /**
+     * the custom action. figures out how many days the vial will last.
+     * every branch multiplies by the frequency now, since a vial holding
+     * 5 doses lasts 5 days dosed daily but 35 dosed weekly. for a static
+     * dose its just doses left times days between. for a titration
+     * schedule it walks each dose step, subtracts the mass that step
+     * eats (days per step divided by days between, kept in float math
+     * so 7 days at eod is 3.5 doses and not 3), and either warns that
+     * the vial runs out mid-titration (with the total mg the protocol
+     * needs) or reports how many days the full protocol lasts including
+     * the leftover days at the target dose
+     *
+     * @param vialId which vial to run the calculation on
+     * @return a result String, either the supply projection or an error if the id was not found
+     */
     public String calculateSupply(int vialId) {
         Peptide target = findPeptide(vialId);
         if (target == null) return "Error: Vial ID not found in inventory.";
@@ -440,17 +455,17 @@ public class InventoryManager {
         return "SUCCESS: Adequate supply remains. Protocol lasts " + String.format("%.1f", totalDays) + " days.";
     }
 
-    /*
-     method: loadFromFile
-     purpose: batch create. reads a text file where every line is one record in the format
-              name,route,target,current,min,totalMass,concentration,frequency,titration,increment,days
-              (eleven columns now, frequency is the new eighth one) and runs each line
-              through the same validation as manual entry so bad data never gets in.
-              bad lines are skipped, counted, and pointed out by line number instead
-              of stopping the whole load
-     arguments: filePath: the location of the text file the user picked
-     return: a summary String with how many records loaded and which line numbers were skipped
-    */
+    /**
+     * batch create. reads a text file where every line is one record in the format
+     * name,route,target,current,min,totalMass,concentration,frequency,titration,increment,days
+     * (eleven columns now, frequency is the new eighth one) and runs each line
+     * through the same validation as manual entry so bad data never gets in.
+     * bad lines are skipped, counted, and pointed out by line number instead
+     * of stopping the whole load
+     *
+     * @param filePath the location of the text file the user picked
+     * @return a summary String with how many records loaded and which line numbers were skipped
+     */
     public String loadFromFile(String filePath) {
         int loaded = 0;
         int lineNumber = 0;

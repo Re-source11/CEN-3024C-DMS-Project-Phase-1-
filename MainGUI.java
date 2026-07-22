@@ -3,24 +3,24 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-/*
- Baker Legerme
- CEN 3024C - 31032
- July 19th, 2026
-
- class: MainGUI
- The window. users only ever touch this.
-
- Overall program objective: This is a DMS for tracking peptides. load,
- display, add, update, remove, plus the custom supply projection, with the
- records living in a real table and saved to MySQL when a database is
- reachable so the data survives the program closing.
-
- this class only draws things and collects input. every button is just a
- call into InventoryManager, which has no idea a GUI even exists. the
- selected table row IS the input for update, remove, and calculate, so
- theres no way to target a record that doesnt exist.
-*/
+/**
+ * The window. users only ever touch this.
+ * <p>
+ * Overall program objective: This is a DMS for tracking peptides. load,
+ * display, add, update, remove, plus the custom supply projection, with the
+ * records living in a real table and saved to MySQL when a database is
+ * reachable so the data survives the program closing.
+ * <p>
+ * this class only draws things and collects input. every button is just a
+ * call into InventoryManager, which has no idea a GUI even exists. the
+ * selected table row IS the input for update, remove, and calculate, so
+ * theres no way to target a record that doesnt exist.
+ * <p>
+ * CEN 3024C - 31032
+ *
+ * @author Baker Legerme
+ * @version 4.0
+ */
 public class MainGUI {
     private InventoryManager manager;
     private JTable table;
@@ -36,6 +36,10 @@ public class MainGUI {
             "Titration", "Increment (mg)", "Days/Step"
     };
 
+    /**
+     * builds the whole window, the table, the buttons, and wires every
+     * button to its InventoryManager operation.
+     */
     public MainGUI() {
         manager = new InventoryManager();
 
@@ -115,13 +119,12 @@ public class MainGUI {
         frame.setVisible(true);
     }
 
-    /*
-     method: driverPresent
-     purpose: checks if a MySQL or MariaDB driver class can even be found, so
-              a missing driver jar gets reported as its own separate problem
-     arguments: none
-     return: true if either driver is on the classpath
-    */
+    /**
+     * checks if a MySQL or MariaDB driver class can even be found, so
+     * a missing driver jar gets reported as its own separate problem
+     *
+     * @return true if either driver is on the classpath
+     */
     private boolean driverPresent() {
         String[] drivers = {"com.mysql.cj.jdbc.Driver", "com.mysql.jdbc.Driver", "org.mariadb.jdbc.Driver"};
         for (String d : drivers) {
@@ -130,14 +133,11 @@ public class MainGUI {
         return false;
     }
 
-    /*
-     method: refreshTable
-     purpose: rebuilds the table from the manager after every operation so the
-              screen always matches whats actually stored. also refreshes the
-              record count and storage mode down in the status bar
-     arguments: none
-     return: nothing
-    */
+    /**
+     * rebuilds the table from the manager after every operation so the
+     * screen always matches whats actually stored. also refreshes the
+     * record count and storage mode down in the status bar
+     */
     private void refreshTable() {
         tableModel.setRowCount(0);
         List<Peptide> all = manager.getAllPeptides();
@@ -155,14 +155,13 @@ public class MainGUI {
         statusLabel.setText(all.size() + " record" + (all.size() == 1 ? "" : "s") + "  |  Storage: " + mode);
     }
 
-    /*
-     method: selectedVialId
-     purpose: reads the vial id right out of column zero of the selected row.
-              the selection is the input now, nobody types ids anymore, so its
-              impossible to target a record that isnt on the screen
-     arguments: none
-     return: the selected records id, or -1 (after a warning) if nothing is selected
-    */
+    /**
+     * reads the vial id right out of column zero of the selected row.
+     * the selection is the input now, nobody types ids anymore, so its
+     * impossible to target a record that isnt on the screen
+     *
+     * @return the selected records id, or -1 (after a warning) if nothing is selected
+     */
     private int selectedVialId() {
         int row = table.getSelectedRow();
         if (row < 0) {
@@ -173,14 +172,11 @@ public class MainGUI {
         return (Integer) tableModel.getValueAt(row, 0);
     }
 
-    /*
-     method: loadData
-     purpose: opens a real file picker instead of asking the user to type a
-              path, then hands the chosen file to the same phase 1 loader, so
-              the validation and line skip reporting run unchanged underneath
-     arguments: none
-     return: nothing
-    */
+    /**
+     * opens a real file picker instead of asking the user to type a
+     * path, then hands the chosen file to the same phase 1 loader, so
+     * the validation and line skip reporting run unchanged underneath
+     */
     private void loadData() {
         JFileChooser chooser = new JFileChooser(".");
         chooser.setDialogTitle("Choose a peptide data file");
@@ -226,18 +222,15 @@ public class MainGUI {
         }
     }
 
-    /*
-     method: addPeptide
-     purpose: the add form, running the exact phase 1 rules. route is a
-              dropdown so a bad route cant even be typed, every field label
-              says its allowed range up front, the titration boxes stay greyed
-              out until the checkbox is on, and breaking a rule reopens the
-              form with everything still filled in and a message saying which
-              rule it was. same loop-until-valid idea as the old CLI, the user
-              can never get bad data in or crash anything
-     arguments: none
-     return: nothing
-    */
+    /**
+     * the add form, running the exact phase 1 rules. route is a
+     * dropdown so a bad route cant even be typed, every field label
+     * says its allowed range up front, the titration boxes stay greyed
+     * out until the checkbox is on, and breaking a rule reopens the
+     * form with everything still filled in and a message saying which
+     * rule it was. same loop-until-valid idea as the old CLI, the user
+     * can never get bad data in or crash anything
+     */
     private void addPeptide() {
         JTextField nameField = new JTextField();
         String[] routes = {"subcutaneous", "topical", "intramuscular"};
@@ -331,17 +324,14 @@ public class MainGUI {
         }
     }
 
-    /*
-     method: updateSelected
-     purpose: edits one field of whatever record is selected in the table. the
-              id comes from the selection, the field from a dropdown, every
-              prompt says the allowed range up front like the old CLI prompts
-              did, route and titration are pick-lists so they cant be typed
-              wrong, and a broken rule gets named and re-asked until the value
-              passes or the user cancels, never kicked back out
-     arguments: none
-     return: nothing
-    */
+    /**
+     * edits one field of whatever record is selected in the table. the
+     * id comes from the selection, the field from a dropdown, every
+     * prompt says the allowed range up front like the old CLI prompts
+     * did, route and titration are pick-lists so they cant be typed
+     * wrong, and a broken rule gets named and re-asked until the value
+     * passes or the user cancels, never kicked back out
+     */
     private void updateSelected() {
         int id = selectedVialId();
         if (id < 0) { return; }
@@ -493,24 +483,20 @@ public class MainGUI {
         }
     }
 
-    /*
-     method: ruleMessage
-     purpose: helper that shows which validation rule an update broke, so the
-              user gets told the actual rule instead of a generic failed message
-     arguments: text: the rule that got broken
-     return: nothing
-    */
+    /**
+     * helper that shows which validation rule an update broke, so the
+     * user gets told the actual rule instead of a generic failed message
+     *
+     * @param text the rule that got broken
+     */
     private void ruleMessage(String text) {
         JOptionPane.showMessageDialog(frame, text, "Invalid Input", JOptionPane.ERROR_MESSAGE);
     }
 
-    /*
-     method: removeSelected
-     purpose: deletes the selected record, with a confirm popup first so one
-              stray click can never destroy data
-     arguments: none
-     return: nothing
-    */
+    /**
+     * deletes the selected record, with a confirm popup first so one
+     * stray click can never destroy data
+     */
     private void removeSelected() {
         int id = selectedVialId();
         if (id < 0) { return; }
@@ -522,12 +508,9 @@ public class MainGUI {
         }
     }
 
-    /*
-     method: calculateSelected
-     purpose: runs the custom supply projection on the selected record
-     arguments: none
-     return: nothing
-    */
+    /**
+     * runs the custom supply projection on the selected record
+     */
     private void calculateSelected() {
         int id = selectedVialId();
         if (id < 0) { return; }
@@ -535,18 +518,15 @@ public class MainGUI {
         JOptionPane.showMessageDialog(frame, result, "Supply Result for Vial " + id, JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /*
-     method: connectDatabaseDialog
-     purpose: asks the user for the mysql server address, port, database name,
-              username, and password, then concatenates the jdbc url out of
-              those pieces. nothing about the connection is hardcoded or
-              assumed, the user supplies all of it. blank fields get called
-              out, a bad address or wrong password shows the databases own
-              error and re-asks, and cancel just leaves the program in memory.
-              nothing typed here can crash anything
-     arguments: none
-     return: nothing
-    */
+    /**
+     * asks the user for the mysql server address, port, database name,
+     * username, and password, then concatenates the jdbc url out of
+     * those pieces. nothing about the connection is hardcoded or
+     * assumed, the user supplies all of it. blank fields get called
+     * out, a bad address or wrong password shows the databases own
+     * error and re-asks, and cancel just leaves the program in memory.
+     * nothing typed here can crash anything
+     */
     private void connectDatabaseDialog() {
         JTextField hostField = new JTextField("localhost", 24);
         JTextField portField = new JTextField("3306", 24);
@@ -607,14 +587,11 @@ public class MainGUI {
         }
     }
 
-    /*
-     method: showSelectedDetail
-     purpose: shows every field of just the double clicked record in one popup,
-              so the user can view a single peptide without scanning the whole
-              table row across all twelve columns
-     arguments: none
-     return: nothing
-    */
+    /**
+     * shows every field of just the double clicked record in one popup,
+     * so the user can view a single peptide without scanning the whole
+     * table row across all twelve columns
+     */
     private void showSelectedDetail() {
         int id = selectedVialId();
         if (id < 0) { return; }
@@ -636,14 +613,13 @@ public class MainGUI {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /*
-     method: createAppIcon
-     purpose: draws the app icon (a little peptide vial) in code, so theres no
-              image file to bundle or lose. shows up in the title bar and the
-              windows taskbar
-     arguments: none
-     return: a 64x64 Image of the vial
-    */
+    /**
+     * draws the app icon (a little peptide vial) in code, so theres no
+     * image file to bundle or lose. shows up in the title bar and the
+     * windows taskbar
+     *
+     * @return a 64x64 Image of the vial
+     */
     private static Image createAppIcon() {
         int s = 64;
         java.awt.image.BufferedImage img =
@@ -667,12 +643,11 @@ public class MainGUI {
         return img;
     }
 
-    /*
-     method: main
-     purpose: where it all begins now. the GUI is the only entry point
-     arguments: args: unused
-     return: nothing
-    */
+    /**
+     * where it all begins now. the GUI is the only entry point
+     *
+     * @param args unused
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainGUI::new);
     }
